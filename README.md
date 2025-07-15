@@ -1,3 +1,10 @@
+# WORK IN PROGRESS - DO NOT USE YET
+# WORK IN PROGRESS - DO NOT USE YET
+# WORK IN PROGRESS - DO NOT USE YET
+# WORK IN PROGRESS - DO NOT USE YET
+# WORK IN PROGRESS - DO NOT USE YET
+# WORK IN PROGRESS - DO NOT USE YET
+
 # BrightSign Model Package (BSMP) Demo using and HTML5 Application
 
 This demo HTML/JS application showcases the tech behind the NPU that is enabled in Brightsign players.  This demo highlights:
