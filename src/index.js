@@ -14,7 +14,7 @@ const imageUpdateInterval = 30; // ms - 30 fps
 const oversampling_rate = 1; // sample at N times the update frequency
 const fetchInterval = imageUpdateInterval / oversampling_rate;
 
-const udpPort = 5003;
+const udpPort = 5002;
 const udpServer = dgram.createSocket('udp4');
 
 // Variables to store the latest detected face count and attending face count
@@ -44,7 +44,7 @@ EDIT BELOW FOR PRESENTATION CHANGES
 const IMAGE_LOCATION_TOP = 70;
 const image_location_top = IMAGE_LOCATION_TOP;
 const image_location_left = 90;
-const vidPath = '/meet-brightsign.mp4'
+const vidPath = 'meet-brightsign.mp4'
 
 /*
 --------------------------------------------------------------------------------------------------------------------------------
@@ -66,6 +66,9 @@ function main() {
     imageContainer.style.left = image_location_left + '%';
     imageContainer.style.top = image_location_top + '%';
     
+    //Play default video
+    showFallbackImage();
+
     // Init Sql database
     console.log('In Main - initFuse');
     initFuse();
@@ -157,45 +160,32 @@ function handleUdpMessage(msg) {
         if (
             typeof data === 'object' &&
             'faces_in_frame_total' in data &&
-            'faces_attending' in data
+            'faces_attending' in data && 'ASR' in data
         ) {
             // Update the variables
             total_faces = data.faces_in_frame_total;
             attending_faces = data.faces_attending;
-        } else {
-            console.log('Invalid JSON structure.');
-        }
-    }
-    else if (udpPort === 5003) {
-        // Parse the JSON message
-        const data = JSON.parse(message);
-        console.log(data);
-        // Validate the structure
-        if (
-            typeof data === 'object' &&
-            'ASR' in data
-        ) {
-            // Update the variables
-	    if (data.ASR === "Listening...") 
-	    {
+	    if (data.ASR === "Listening...")
+            {
                 console.log("Detected the listening prompt!");
             }
-	    else
-	    {
+            else
+            {
                 // Update the banner with the new values
-	        display_asr = data.ASR;
+                display_asr = data.ASR;
                 updateBanner();
-	        searchProduct(data.ASR);
-		// Clear any existing timer
+                searchProduct(data.ASR);
+                // Clear any existing timer
                 if (asrResetTimer) clearTimeout(asrResetTimer);
 
                 // Set a new timer to clear ASR after 90 seconds
                 asrResetTimer = setTimeout(() => {
                 display_asr = "";
                 updateBanner();
-		showFallbackVideo();
+                showFallbackVideo();
                 }, 90000);
-	    }
+            }
+
         } else {
             console.log('Invalid JSON structure.');
         }
