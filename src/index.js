@@ -22,7 +22,9 @@ let total_faces = 'N/A';
 let attending_faces = 'N/A';
 let display_asr = 'N/A'
 let asrResetTimer = null;
-
+let listenResetTimer = null;
+let isPlaying = false;
+let isListening = false;
 let fuse = null;
 const products = [
     { name: "pizza", keywords: ["food", "pizza", "eat"], video: "pizza.mp4" },
@@ -75,7 +77,7 @@ function main() {
 
     // Bind the UDP server to the specified port
     udpServer.bind(udpPort, () => {
-        console.log(`UDP server listening on port ${udpPort}`);
+       console.log(`UDP server listening on port ${udpPort}`);
     });
 
     // Listen for UDP messages
@@ -155,8 +157,6 @@ function handleUdpMessage(msg) {
     } else if (udpPort === 5002) {
         // Parse the JSON message
         const data = JSON.parse(message);
-        //console.log(data);
-        // Validate the structure
         if (
             typeof data === 'object' &&
             'faces_in_frame_total' in data &&
@@ -165,25 +165,47 @@ function handleUdpMessage(msg) {
             // Update the variables
             total_faces = data.faces_in_frame_total;
             attending_faces = data.faces_attending;
-	    if (data.ASR === "Listening...")
+	    if (data.ASR === "Listening..." && !isListening)
             {
+		if (isPlaying) {
+                    console.log("Ignoring Listening... prompt: Video/ASR in progress");
+                    return;
+                }
                 console.log("Detected the listening prompt!");
-            }
+		isListening = true;
+                display_asr = data.ASR;
+                updateBanner();
+                // Clear any existing timer
+                if (listenResetTimer) clearTimeout(listenResetTimer);
+                if (asrResetTimer) clearTimeout(asrResetTimer);
+
+                // Set a new timer to clear Listening message after 2 seconds
+                listenResetTimer = setTimeout(() => {
+                display_asr = "";
+                updateBanner();
+                }, 2000);
+
+	    }
             else
             {
+		isPlaying = true;
+		isListening = false;
                 // Update the banner with the new values
+		console.log("Received ASR :", data.ASR);
                 display_asr = data.ASR;
                 updateBanner();
                 searchProduct(data.ASR);
                 // Clear any existing timer
+                if (listenResetTimer) clearTimeout(listenResetTimer);
                 if (asrResetTimer) clearTimeout(asrResetTimer);
 
-                // Set a new timer to clear ASR after 90 seconds
+                // Set a new timer to clear ASR after 20 seconds
                 asrResetTimer = setTimeout(() => {
+		//isPlaying = false;
                 display_asr = "";
                 updateBanner();
-                showFallbackVideo();
-                }, 90000);
+                showFallbackImage();
+                }, 20000);
             }
 
         } else {
@@ -194,7 +216,11 @@ function handleUdpMessage(msg) {
 
 // Function to update the displayed values
 function updateBanner() {
-   udpMessageElement.textContent = display_asr ? `ASR: ${display_asr}` : "";
+    if (display_asr === "Listening...") {
+        udpMessageElement.textContent = display_asr;
+    } else {
+        udpMessageElement.textContent = display_asr ? `ASR: ${display_asr}` : "";
+    }
 }
 
 function simpleStem(word) {
@@ -217,7 +243,6 @@ function initFuse() {
         threshold: 0.4,
         includeScore: true
     });
-    console.log("Products loaded:", products);
 }
 
 function searchProduct(asr) {
@@ -234,12 +259,16 @@ function searchProduct(asr) {
     }
 
     if (bestMatch) {
-        console.log(`Playing video : ${bestMatch.video}`);
         playVideo(bestMatch.video);
         console.log(`Playing video for: ${bestMatch.name}`);
     } else {
         console.log("No search results found");
-        showFallbackImage();
+	setTimeout(() => {
+            display_asr = "";
+            updateBanner();
+            showFallbackImage();
+	    isPlaying = false;
+        }, 3000); // 3 seconds delay, adjust as needed
     }
 }
 
@@ -247,7 +276,15 @@ function playVideo(newVideoPath) {
     const videoZone = document.getElementById('video');
     videoZone.style.display = 'block';
     videoZone.src = newVideoPath;
+    videoZone.loop = false;
     videoZone.load();
+    isPlaying = true;
+    videoZone.onended = function() {
+        isPlaying = false;
+        display_asr = "";
+        updateBanner();
+        showFallbackImage();  // Play fallback video *after* product video ends
+    };
     videoZone.play();
 }
 
@@ -255,7 +292,9 @@ function showFallbackImage() {
     const videoZone = document.getElementById('video');
     videoZone.style.display = 'block';
     videoZone.src = "meet-brightsign.mp4";
+    videoZone.loop = true;
     videoZone.load();
+    videoZone.onended = null;
     videoZone.play();
 
 }
