@@ -1,4 +1,4 @@
-r// Ensure we can use Node.js APIs
+// Ensure we can use Node.js APIs
 const fs = require('fs');
 const dgram = require('dgram');
 const Fuse = require('fuse.js');
