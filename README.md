@@ -6,6 +6,14 @@ This demo HTML/JS application showcases the tech behind the NPU that is enabled 
 - Detects a person close enough to be heard by using a video model to "see" a person
 - Listens for key words and triggers different videos
 
+> **Looking for a complete solution?**
+> [**Argus**](https://github.com/brightsign/argus-audience-measurement-extension) is BrightSign's
+> reference audience-measurement application: person counting, gaze detection, dwell time,
+> entry/exit events, and movement analytics, published over MQTT and Prometheus. This repository
+> is a single-purpose example of one piece of that system.
+>
+> *For production audience analytics rather than a visual demo, use Argus.*
+
 ## Key Words
 
 * Chocolate
@@ -17,7 +25,7 @@ This demo HTML/JS application showcases the tech behind the NPU that is enabled 
 
 1. ensure you have all the pre-requisites per the [BSMP](https://github.com/brightsign/brightsign-npu-voice-extension)
 2. copy the contents of the 'sd' folder to an SD card
-3. copy the [BSMP](https://github.com/brightsign/brightsign-npu-voice-extension/releases/download/v0.1.0-alpha/cobra-standalone-npu_voice-0.1.0.bsfw) onto the SD card
+3. copy the [BSMP](https://github.com/brightsign/brightsign-npu-voice-extension/releases/latest) onto the SD card
 4. place the SD card into the player and boot
 
 ## Prerequisites
